@@ -1,0 +1,10 @@
+﻿@model DotNetCoreMVC.Models.EmployeeModel.Employee
+
+<h1>Confirm Delete</h1>
+
+<p>Are you sure you want to delete the employee: @Model.EmployeeName?</p>
+
+<form method="post" action="@Url.Action("EmployeeDelete", new { id = Model.EmployeeID })">
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+</form>
