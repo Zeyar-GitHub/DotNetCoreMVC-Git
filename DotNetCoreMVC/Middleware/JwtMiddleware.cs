@@ -17,23 +17,13 @@ namespace DotNetCoreMVC.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            //var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-            //if (token != null)
-            //    AttachUserToContext(context, token);
-
-            //await _next(context);
-
-            // Cookie ကနေ token ရယူပါ
             var token = context.Request.Cookies["AuthToken"];
 
-            // Token ရှိရင် User ကို context မှာ attach လုပ်ပါ
             if (token != null)
             {
                 AttachUserToContext(context, token);
             }
 
-            // Request ကို အဆက်အသွားပေးပါ
             await _next(context);
         }
 
@@ -47,17 +37,22 @@ namespace DotNetCoreMVC.Middleware
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,  // validate Issuer
+                    ValidateAudience = true, // validate Audience
+                    ValidIssuer = _configuration["JwtSettings:Issuer"],
+                    ValidAudience = _configuration["JwtSettings:Audience"],
                     ValidateLifetime = true,
                 };
 
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 context.User = principal;
             }
-            catch
+            catch (Exception ex)
             {
-                // Token invalid
+                // Log the error message
+                Console.WriteLine($"Token validation failed: {ex.Message}");
+                // Optionally set Unauthorized status
+                context.Response.StatusCode = 401;
             }
         }
     }

@@ -3,21 +3,29 @@ using DotNetCoreMVC.Models.EmployeeModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DotNetCoreMVC.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class EmployeeController : Controller
     {
         private readonly DataContext _dataContext;
+        private readonly ILogger<EmployeeController> _logger;
 
         public EmployeeController(DataContext datacontext)
         {
             _dataContext = datacontext;
         }
-
+        
         public async Task<IActionResult> Index(string value)
         {
+            //var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            //foreach (var claim in claims)
+            //{
+            //    Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+            //}
+
             var employees = await _dataContext.Employees.ToListAsync();
             if (!string.IsNullOrEmpty(value))
             {
