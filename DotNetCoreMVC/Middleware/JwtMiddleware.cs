@@ -17,11 +17,23 @@ namespace DotNetCoreMVC.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            //var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
+            //if (token != null)
+            //    AttachUserToContext(context, token);
+
+            //await _next(context);
+
+            // Cookie ကနေ token ရယူပါ
+            var token = context.Request.Cookies["AuthToken"];
+
+            // Token ရှိရင် User ကို context မှာ attach လုပ်ပါ
             if (token != null)
+            {
                 AttachUserToContext(context, token);
+            }
 
+            // Request ကို အဆက်အသွားပေးပါ
             await _next(context);
         }
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetCoreMVC.Controllers
 {
-    [Authorize] 
+    //[Authorize]
     public class EmployeeController : Controller
     {
         private readonly DataContext _dataContext;
@@ -16,19 +16,6 @@ namespace DotNetCoreMVC.Controllers
             _dataContext = datacontext;
         }
 
-        //public async Task<IActionResult> Index(string? searchValue = null)
-        //{
-        //    Console.WriteLine($"Authenticated User: {User.Identity?.Name}"); // Debugging Purpose
-
-        //    var employees = await _dataContext.Employees.ToListAsync();
-
-        //    if (!string.IsNullOrEmpty(searchValue) && int.TryParse(searchValue, out int employeeId))
-        //    {
-        //        employees = employees.Where(e => e.EmployeeID == employeeId).ToList();
-        //    }
-
-        //    return View(employees);
-        //}
         public async Task<IActionResult> Index(string value)
         {
             var employees = await _dataContext.Employees.ToListAsync();

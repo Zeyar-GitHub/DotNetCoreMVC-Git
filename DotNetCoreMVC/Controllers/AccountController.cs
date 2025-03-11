@@ -15,27 +15,26 @@ namespace DotNetCoreMVC.Controllers
             return View();
         }
         [HttpPost]
+        [HttpPost]
         public IActionResult LogIn(string username, string password)
         {
-            if (username == "admin" && password == "password") // Replace with real authentication
-            {
-                var token = _jwtTokenService.GenerateToken(username);
+            var token = _jwtTokenService.GenerateToken(username);
 
-                // Save JWT Token in Cookie
-                Response.Cookies.Append("AuthToken", token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true, // Set true in production
-                    Expires = DateTime.UtcNow.AddMinutes(30)
-                });
-                return RedirectToAction("Index", "Employee");
-            }
-            else
+            var cookieOptions = new CookieOptions
             {
-                ViewBag.Error = "Invalid username or password";
-                return View();
-            }
+                HttpOnly = true,  // Prevent JavaScript access
+                Secure = false,   // Localhost မှာ Secure=false (Production မှာ true ပြန်ထားပါ)
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddMinutes(30)
+            };
+
+            Response.Cookies.Append("AuthToken", token, cookieOptions);
+
+            Console.WriteLine($"✅ Set-Cookie: AuthToken={token}"); // Debug Log
+
+            return RedirectToAction("Index", "Employee");
         }
+
 
         public IActionResult LogOut()
         {
