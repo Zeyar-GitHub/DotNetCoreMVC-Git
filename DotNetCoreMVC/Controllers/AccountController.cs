@@ -26,7 +26,7 @@ namespace DotNetCoreMVC.Controllers
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,  // Prevent JavaScript access
-                    Secure = false,   // Localhost မှာ Secure=false (Production မှာ true ပြန်ထားပါ)
+                    Secure = false,   // In Production, set to true
                     SameSite = SameSiteMode.Strict,
                     Expires = ConvertUtcToBangkokWithOffset(DateTime.UtcNow)
                 };
@@ -46,16 +46,16 @@ namespace DotNetCoreMVC.Controllers
 
         public static DateTime ConvertUtcToBangkokWithOffset(DateTime utcDateTime)
         {
-            // Bangkok time zone ရဲ့ ID ကို သတ်မှတ်ခြင်း
+            // Bangkok time zone id
             string bangkokTimeZoneId = "SE Asia Standard Time";
 
-            // TimeZoneInfo object ကို ရယူခြင်း
+            // Timezone info
             TimeZoneInfo bangkokTimeZone = TimeZoneInfo.FindSystemTimeZoneById(bangkokTimeZoneId);
 
-            // UTC time ကို Bangkok time ပြောင်းခြင်း
+            // Bangkok date to utc date
             DateTime bangkokDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, bangkokTimeZone);
 
-            // မိနစ် ၃၀ ထပ်ပေါင်းခြင်း
+            // Add 30 minutes to the bangkok date
             DateTime bangkokDateTimeWithOffset = bangkokDateTime.AddMinutes(30);
 
             return bangkokDateTimeWithOffset;
