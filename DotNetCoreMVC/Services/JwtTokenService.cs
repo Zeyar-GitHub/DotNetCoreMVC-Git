@@ -2,12 +2,15 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DotNetCoreMVC.Controllers;
 
 public class JwtTokenService : IJwtTokenService
 {
     private readonly string _secret;
     private readonly string _issuer;
     private readonly string _audience;
+
+    private readonly ILogger<EmployeeController> _logger;
 
     public JwtTokenService(IConfiguration configuration)
     {
@@ -36,6 +39,32 @@ public class JwtTokenService : IJwtTokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    //public ClaimsPrincipal ValidateToken(string token)
+    //{
+    //    try
+    //    {
+    //        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
+    //        var tokenHandler = new JwtSecurityTokenHandler();
+    //        var validationParameters = new TokenValidationParameters
+    //        {
+    //            ValidateIssuer = true,
+    //            ValidateAudience = true,
+    //            ValidateLifetime = true,
+    //            ValidateIssuerSigningKey = true,
+    //            ValidIssuer = _issuer,
+    //            ValidAudience = _audience,
+    //            IssuerSigningKey = key,
+    //            ClockSkew = TimeSpan.Zero
+    //        };
+
+    //        var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+    //        return principal;
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return null;
+    //    }
+    //}
     public ClaimsPrincipal ValidateToken(string token)
     {
         try
@@ -51,15 +80,30 @@ public class JwtTokenService : IJwtTokenService
                 ValidIssuer = _issuer,
                 ValidAudience = _audience,
                 IssuerSigningKey = key,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero // You can allow a small grace period, e.g., 5 minutes
             };
 
             var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
             return principal;
         }
-        catch (Exception)
+        catch (SecurityTokenExpiredException)
         {
+            // Log token expiration error
+            _logger.LogError("Token has expired.");
+            return null;
+        }
+        catch (SecurityTokenException ex)
+        {
+            // Log other token validation errors
+            _logger.LogError($"Token validation failed: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // Log general errors
+            _logger.LogError($"An unexpected error occurred: {ex.Message}");
             return null;
         }
     }
+
 }

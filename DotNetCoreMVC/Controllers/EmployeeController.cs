@@ -12,32 +12,40 @@ namespace DotNetCoreMVC.Controllers
     {
         private readonly DataContext _dataContext;
         private readonly ILogger<EmployeeController> _logger;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public EmployeeController(DataContext datacontext)
+        public EmployeeController(DataContext datacontext, ILogger<EmployeeController> logger, IJwtTokenService jwtTokenService)
         {
             _dataContext = datacontext;
+            _logger = logger;
+            _jwtTokenService = jwtTokenService;
         }
-        
+
         public async Task<IActionResult> Index(string value)
         {
-            //var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            //foreach (var claim in claims)
-            //{
-            //    Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
-            //}
+            // Get token from the Authorization header
+            var token = Request.Cookies["AuthToken"];
 
-            var employees = await _dataContext.Employees.ToListAsync();
-            if (!string.IsNullOrEmpty(value))
+
+            var principal = _jwtTokenService.ValidateToken(token);
+
+            if (principal == null)
             {
-                int employeeId;
-                if (Int32.TryParse(value, out employeeId))
-                {
-                    employees = employees.Where(x => x.EmployeeID == employeeId).ToList();
-                }
+                // Handle invalid token or unauthorized access
+                return Unauthorized();
             }
+
+
+            var query = _dataContext.Employees.AsQueryable();
+
+            if (!string.IsNullOrEmpty(value) && int.TryParse(value, out int employeeId))
+            {
+                query = query.Where(x => x.EmployeeID == employeeId);
+            }
+
+            var employees = await query.ToListAsync();
             return View(employees);
         }
-
 
         public IActionResult EmployeeCreate()
         {
@@ -45,18 +53,25 @@ namespace DotNetCoreMVC.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EmployeeCreate(AddEmployeeViewModel addEmployeeViewModel)
         {
-            var employee = new Employee()
+            if (!ModelState.IsValid)
+            {
+                return View(addEmployeeViewModel);
+            }
+
+            var employee = new Employee
             {
                 EmployeeName = addEmployeeViewModel.EmployeeName,
                 Designation = addEmployeeViewModel.Designation,
                 Department = addEmployeeViewModel.Department
             };
+
             await _dataContext.Employees.AddAsync(employee);
             await _dataContext.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> EmployeeEdit(int id)
@@ -66,50 +81,57 @@ namespace DotNetCoreMVC.Controllers
             {
                 return NotFound();
             }
-            var addEmployeeViewModel = new AddEmployeeViewModel()
+
+            var viewModel = new AddEmployeeViewModel
             {
                 EmployeeID = employee.EmployeeID,
                 EmployeeName = employee.EmployeeName,
                 Designation = employee.Designation,
                 Department = employee.Department
             };
-            return View(addEmployeeViewModel);
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> EmployeeEdit(int id, Employee employee)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EmployeeEdit(int id, AddEmployeeViewModel model)
         {
-            if (id != employee.EmployeeID)
+            if (id != model.EmployeeID)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _dataContext.Update(employee);
-                    await _dataContext.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EmployeeExists(employee.EmployeeID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(model);
             }
-            return RedirectToAction("Index");
-        }
 
-        private bool EmployeeExists(int id)
-        {
-            return _dataContext.Employees.Any(e => e.EmployeeID == id);
+            var employee = await _dataContext.Employees.FindAsync(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            employee.EmployeeName = model.EmployeeName;
+            employee.Designation = model.Designation;
+            employee.Department = model.Department;
+
+            try
+            {
+                _dataContext.Update(employee);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EmployeeExists(employee.EmployeeID))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> EmployeeDeleteConfirm(int id)
@@ -120,11 +142,12 @@ namespace DotNetCoreMVC.Controllers
                 return NotFound();
             }
 
-            return View("EmployeeDeleteConfirm", employee);
+            return View(employee);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> EmployeeDelete(int id)
+        [HttpPost, ActionName("EmployeeDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EmployeeDeleteConfirmed(int id)
         {
             var employee = await _dataContext.Employees.FindAsync(id);
             if (employee == null)
@@ -135,7 +158,12 @@ namespace DotNetCoreMVC.Controllers
             _dataContext.Employees.Remove(employee);
             await _dataContext.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool EmployeeExists(int id)
+        {
+            return _dataContext.Employees.Any(e => e.EmployeeID == id);
         }
     }
 }
