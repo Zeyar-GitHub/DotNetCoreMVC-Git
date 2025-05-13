@@ -1,25 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DotNetCoreMVC.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace DotNetCoreMVC.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly DataContext _dataContext;
         private readonly IJwtTokenService _jwtTokenService;
 
-        public AccountController(IJwtTokenService jwtTokenService)
+        public AccountController(DataContext dataContext, IJwtTokenService jwtTokenService)
         {
+            _dataContext = dataContext;
             _jwtTokenService = jwtTokenService;
         }
+
         public IActionResult LogIn()
         {
             return View();
         }
-        
+
         [HttpPost]
         public IActionResult LogIn(string username, string password)
         {
-            if (username == "admin" && password == "password")
+            var user = _dataContext.LogIn.SingleOrDefault(u=>u.UserName == username && u.Password == password);
+            
+            if (user != null)
             {
                 var token = _jwtTokenService.GenerateToken(username);
 
@@ -40,8 +47,8 @@ namespace DotNetCoreMVC.Controllers
                 ViewBag.Error = "Invalid username or password";
                 return View();
             }
-                
-            
+
+
         }
 
         public static DateTime ConvertUtcToBangkokWithOffset(DateTime utcDateTime)

@@ -39,32 +39,6 @@ public class JwtTokenService : IJwtTokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    //public ClaimsPrincipal ValidateToken(string token)
-    //{
-    //    try
-    //    {
-    //        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
-    //        var tokenHandler = new JwtSecurityTokenHandler();
-    //        var validationParameters = new TokenValidationParameters
-    //        {
-    //            ValidateIssuer = true,
-    //            ValidateAudience = true,
-    //            ValidateLifetime = true,
-    //            ValidateIssuerSigningKey = true,
-    //            ValidIssuer = _issuer,
-    //            ValidAudience = _audience,
-    //            IssuerSigningKey = key,
-    //            ClockSkew = TimeSpan.Zero
-    //        };
-
-    //        var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
-    //        return principal;
-    //    }
-    //    catch (Exception)
-    //    {
-    //        return null;
-    //    }
-    //}
     public ClaimsPrincipal ValidateToken(string token)
     {
         try
