@@ -1,7 +1,7 @@
 ﻿using DotNetCoreMVC.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using DotNetCoreMVC.Models;
+using BCrypt.Net;
 
 namespace DotNetCoreMVC.Controllers
 {
@@ -24,9 +24,9 @@ namespace DotNetCoreMVC.Controllers
         [HttpPost]
         public IActionResult LogIn(string username, string password)
         {
-            var user = _dataContext.LogIn.SingleOrDefault(u=>u.UserName == username && u.Password == password);
+            var user = _dataContext.LogIn.SingleOrDefault(u => u.UserName == username);
             
-            if (user != null)
+            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
                 var token = _jwtTokenService.GenerateToken(username);
 
@@ -47,8 +47,48 @@ namespace DotNetCoreMVC.Controllers
                 ViewBag.Error = "Invalid username or password";
                 return View();
             }
+        }
 
+        public IActionResult Create()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(LogInCreateModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Check if username already exists
+                if (_dataContext.LogIn.Any(u => u.UserName == model.UserName))
+                {
+                    ModelState.AddModelError("UserName", "Username already exists");
+                    return View(model);
+                }
+
+                // Hash the password
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+                var newUser = new LogIn
+                {
+                    UserName = model.UserName,
+                    Password = hashedPassword
+                };
+
+                _dataContext.LogIn.Add(newUser);
+                _dataContext.SaveChanges();
+
+                return RedirectToAction("LogIn");
+            }
+
+            return View(model);
+        }
+
+        public IActionResult LogOut()
+        {
+            Response.Cookies.Delete("AuthToken");
+            return RedirectToAction("LogIn");
         }
 
         public static DateTime ConvertUtcToBangkokWithOffset(DateTime utcDateTime)
@@ -66,11 +106,6 @@ namespace DotNetCoreMVC.Controllers
             DateTime bangkokDateTimeWithOffset = bangkokDateTime.AddMinutes(30);
 
             return bangkokDateTimeWithOffset;
-        }
-        public IActionResult LogOut()
-        {
-            Response.Cookies.Delete("AuthToken");
-            return RedirectToAction("LogIn");
         }
     }
 }

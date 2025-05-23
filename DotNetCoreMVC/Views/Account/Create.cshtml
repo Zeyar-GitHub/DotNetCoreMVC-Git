@@ -1,4 +1,5 @@
-﻿@{
+@model DotNetCoreMVC.Models.LogInCreateModel
+@{
     Layout = null;
 }
 
@@ -7,46 +8,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Create Account</title>
 </head>
 <body>
-
     <table align="center">
         <tr>
             <td colspan="2" align="center">
-                <h2>Login</h2>
+                <h2>Create New Account</h2>
             </td>
         </tr>
 
-        @if (ViewBag.Error != null)
+        @if (!ViewData.ModelState.IsValid)
         {
             <tr>
-                <td colspan="2" align="center" style="color: red;">
-                    @ViewBag.Error
+                <td colspan="2" align="center">
+                    <div asp-validation-summary="All" class="text-danger"></div>
                 </td>
             </tr>
         }
 
         <tr>
             <td colspan="2">
-                <form method="post" action="@Url.Action("Login", "Account")">
+                <form method="post" action="@Url.Action("Create", "Account")">
+                    @Html.AntiForgeryToken()
                     <table align="center">
                         <tr>
                             <td>Username:</td>
-                            <td><input type="text" name="username" required /></td>
+                            <td>
+                                <input type="text" name="UserName" required 
+                                       minlength="3" maxlength="50" />
+                            </td>
                         </tr>
                         <tr>
                             <td>Password:</td>
-                            <td><input type="password" name="password" required /></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" align="center">
-                                <button type="submit">Login</button>
+                            <td>
+                                <input type="password" name="Password" required 
+                                       minlength="6" maxlength="100" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2" align="center">
-                                <a href="@Url.Action("Create", "Account")">Create New Account</a>
+                                <button type="submit">Create Account</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center">
+                                <a href="@Url.Action("LogIn", "Account")">Back to Login</a>
                             </td>
                         </tr>
                     </table>
@@ -54,6 +61,5 @@
             </td>
         </tr>
     </table>
-
 </body>
-</html>
+</html> 

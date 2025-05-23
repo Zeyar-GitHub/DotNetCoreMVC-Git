@@ -1,4 +1,5 @@
-﻿using DotNetCoreMVC.Models.EmployeeModel;
+﻿using DotNetCoreMVC.Models;
+using DotNetCoreMVC.Models.EmployeeModel;
 using DotNetCoreMVC.Models.LogInModel;
 using Microsoft.EntityFrameworkCore;
 
