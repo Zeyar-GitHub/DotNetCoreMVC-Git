@@ -19,11 +19,12 @@ public class JwtTokenService : IJwtTokenService
         _audience = configuration["JwtSettings:Audience"];
     }
 
-    public string GenerateToken(string username)
+    public string GenerateToken(string username, int userId)
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, username)
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));

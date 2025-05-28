@@ -2,7 +2,7 @@
 
 public interface IJwtTokenService
 {
-    string GenerateToken(string username);
+    string GenerateToken(string username, int userId);
     ClaimsPrincipal? ValidateToken(string token);
 
 }

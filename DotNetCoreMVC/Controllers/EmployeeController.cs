@@ -145,9 +145,9 @@ namespace DotNetCoreMVC.Controllers
             return View(employee);
         }
 
-        [HttpPost, ActionName("EmployeeDelete")]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EmployeeDeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var employee = await _dataContext.Employees.FindAsync(id);
             if (employee == null)
@@ -158,7 +158,49 @@ namespace DotNetCoreMVC.Controllers
             _dataContext.Employees.Remove(employee);
             await _dataContext.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var employee = _dataContext.Employees.Find(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return View(employee);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Employee employee)
+        {
+            if (id != employee.EmployeeID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _dataContext.Update(employee);
+                    _dataContext.SaveChanges();
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (Exception)
+                {
+                    if (!EmployeeExists(employee.EmployeeID))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return View(employee);
         }
 
         private bool EmployeeExists(int id)

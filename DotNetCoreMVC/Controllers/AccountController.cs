@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using DotNetCoreMVC.Models;
 using BCrypt.Net;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetCoreMVC.Controllers
 {
@@ -9,11 +10,13 @@ namespace DotNetCoreMVC.Controllers
     {
         private readonly DataContext _dataContext;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(DataContext dataContext, IJwtTokenService jwtTokenService)
+        public AccountController(DataContext dataContext, IJwtTokenService jwtTokenService, ILogger<AccountController> logger)
         {
             _dataContext = dataContext;
             _jwtTokenService = jwtTokenService;
+            _logger = logger;
         }
 
         public IActionResult LogIn()
@@ -28,19 +31,16 @@ namespace DotNetCoreMVC.Controllers
             
             if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
-                var token = _jwtTokenService.GenerateToken(username);
-
-                var cookieOptions = new CookieOptions
+                var token = _jwtTokenService.GenerateToken(user.UserName, user.LogInID);
+                Response.Cookies.Append("AuthToken", token, new CookieOptions
                 {
-                    HttpOnly = true,  // Prevent JavaScript access
-                    Secure = false,   // In Production, set to true
+                    HttpOnly = true,
+                    Secure = true,
                     SameSite = SameSiteMode.Strict,
-                    Expires = ConvertUtcToBangkokWithOffset(DateTime.UtcNow)
-                };
+                    Expires = DateTime.UtcNow.AddMinutes(30)
+                });
 
-                Response.Cookies.Append("AuthToken", token, cookieOptions);
-
-                return RedirectToAction("Index", "Employee");
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -89,6 +89,34 @@ namespace DotNetCoreMVC.Controllers
         {
             Response.Cookies.Delete("AuthToken");
             return RedirectToAction("LogIn");
+        }
+
+        public IActionResult Delete()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(string username, string password)
+        {
+            var user = _dataContext.LogIn.SingleOrDefault(u => u.UserName == username);
+            
+            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
+            {
+                _dataContext.LogIn.Remove(user);
+                _dataContext.SaveChanges();
+
+                // Clear the authentication cookie
+                Response.Cookies.Delete("AuthToken");
+
+                return RedirectToAction("LogIn");
+            }
+            else
+            {
+                ViewBag.Error = "Invalid username or password";
+                return View();
+            }
         }
 
         public static DateTime ConvertUtcToBangkokWithOffset(DateTime utcDateTime)
