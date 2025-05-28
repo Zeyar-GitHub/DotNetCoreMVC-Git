@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using DotNetCoreMVC.Data;
 
 namespace DotNetCoreMVC.Controllers
@@ -20,13 +21,37 @@ namespace DotNetCoreMVC.Controllers
 
             if (string.IsNullOrEmpty(token))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("LogIn", "Account");
             }
 
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
 
-            ViewBag.Username = jsonToken?.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value ?? "Guest";
+                if (jsonToken != null)
+                {
+                    // Get username from ClaimTypes.Name
+                    var username = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        ViewBag.Username = username;
+                    }
+                    else
+                    {
+                        ViewBag.Username = "Guest";
+                    }
+                }
+                else
+                {
+                    ViewBag.Username = "Guest";
+                }
+            }
+            catch
+            {
+                ViewBag.Username = "Guest";
+            }
             
             // Get employee list
             var employees = _dataContext.Employees.ToList();

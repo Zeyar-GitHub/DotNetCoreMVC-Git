@@ -3,9 +3,13 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome @ViewBag.Username</h1>
-    <div class="mb-4">
-        <a asp-controller="Account" asp-action="LogOut" class="btn btn-danger">Logout</a>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h1 class="display-4 mb-3">Welcome, <span class="text-primary">@ViewBag.Username</span>!</h1>
+            <a asp-controller="Account" asp-action="LogOut" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
 </div>
 
