@@ -2,17 +2,14 @@
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Employee List</h2>
-            <p class="text-muted"><span class="text-primary">@ViewBag.Username</span></p>
-        </div>
+        <h2>Employee List</h2>
         <a asp-controller="Employee" asp-action="Create" class="btn btn-primary">Create New Employee</a>
     </div>
     
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>No.</th>
                 <th>Name</th>
                 <th>Designation</th>
                 <th>Department</th>
@@ -20,10 +17,13 @@
             </tr>
         </thead>
         <tbody>
+            @{
+                int serialNumber = 1;
+            }
             @foreach (var employee in Model)
             {
                 <tr>
-                    <td>@employee.EmployeeID</td>
+                    <td>@serialNumber</td>
                     <td>@employee.EmployeeName</td>
                     <td>@employee.Designation</td>
                     <td>@employee.Department</td>
@@ -35,6 +35,7 @@
                         </form>
                     </td>
                 </tr>
+                serialNumber++;
             }
         </tbody>
     </table>
