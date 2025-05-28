@@ -24,38 +24,7 @@ namespace DotNetCoreMVC.Controllers
                 return RedirectToAction("LogIn", "Account");
             }
 
-            try
-            {
-                var handler = new JwtSecurityTokenHandler();
-                var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-
-                if (jsonToken != null)
-                {
-                    // Get username from ClaimTypes.Name
-                    var username = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-
-                    if (!string.IsNullOrEmpty(username))
-                    {
-                        ViewBag.Username = username;
-                    }
-                    else
-                    {
-                        ViewBag.Username = "Guest";
-                    }
-                }
-                else
-                {
-                    ViewBag.Username = "Guest";
-                }
-            }
-            catch
-            {
-                ViewBag.Username = "Guest";
-            }
-            
-            // Get employee list
-            var employees = _dataContext.Employees.ToList();
-            return View(employees);
+            return RedirectToAction("Index", "Employee");
         }
     }
 }

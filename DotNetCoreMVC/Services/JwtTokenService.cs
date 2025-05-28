@@ -9,14 +9,14 @@ public class JwtTokenService : IJwtTokenService
     private readonly string _secret;
     private readonly string _issuer;
     private readonly string _audience;
+    private readonly ILogger<JwtTokenService> _logger;
 
-    private readonly ILogger<EmployeeController> _logger;
-
-    public JwtTokenService(IConfiguration configuration)
+    public JwtTokenService(IConfiguration configuration, ILogger<JwtTokenService> logger)
     {
         _secret = configuration["JwtSettings:SecretKey"];
         _issuer = configuration["JwtSettings:Issuer"];
         _audience = configuration["JwtSettings:Audience"];
+        _logger = logger;
     }
 
     public string GenerateToken(string username, int userId)
@@ -80,5 +80,4 @@ public class JwtTokenService : IJwtTokenService
             return null;
         }
     }
-
 }

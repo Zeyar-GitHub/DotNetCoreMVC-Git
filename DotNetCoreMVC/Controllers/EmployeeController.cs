@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace DotNetCoreMVC.Controllers
 {
@@ -26,7 +27,6 @@ namespace DotNetCoreMVC.Controllers
             // Get token from the Authorization header
             var token = Request.Cookies["AuthToken"];
 
-
             var principal = _jwtTokenService.ValidateToken(token);
 
             if (principal == null)
@@ -35,6 +35,34 @@ namespace DotNetCoreMVC.Controllers
                 return Unauthorized();
             }
 
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+
+                if (jsonToken != null)
+                {
+                    // Get username from ClaimTypes.Name
+                    var username = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        ViewBag.Username = username;
+                    }
+                    else
+                    {
+                        ViewBag.Username = "Guest";
+                    }
+                }
+                else
+                {
+                    ViewBag.Username = "Guest";
+                }
+            }
+            catch
+            {
+                ViewBag.Username = "Guest";
+            }
 
             var query = _dataContext.Employees.AsQueryable();
 
@@ -71,7 +99,7 @@ namespace DotNetCoreMVC.Controllers
             await _dataContext.Employees.AddAsync(employee);
             await _dataContext.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Edit(int id)
@@ -99,7 +127,7 @@ namespace DotNetCoreMVC.Controllers
                 {
                     _dataContext.Update(employee);
                     _dataContext.SaveChanges();
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (Exception)
                 {
@@ -140,7 +168,7 @@ namespace DotNetCoreMVC.Controllers
             _dataContext.Employees.Remove(employee);
             await _dataContext.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(nameof(Index));
         }
 
         private bool EmployeeExists(int id)
