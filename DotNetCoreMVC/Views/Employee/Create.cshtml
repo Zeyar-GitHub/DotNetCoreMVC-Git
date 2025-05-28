@@ -1,17 +1,16 @@
-@model DotNetCoreMVC.Models.EmployeeModel.Employee
+﻿@model DotNetCoreMVC.Models.EmployeeModel.AddEmployeeViewModel
 
 @{
-    ViewData["Title"] = "Edit Employee";
+    ViewData["Title"] = "Create Employee";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <h2 class="text-center mb-4">Edit Employee</h2>
+        <h2 class="text-center mb-4">Create Employee</h2>
 
-        <form asp-controller="Employee" asp-action="Edit" method="post">
+        <form asp-controller="Employee" asp-action="Create" method="post">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="EmployeeID" />
             
             <div class="form-group mb-3">
                 <label asp-for="EmployeeName" class="control-label">Name</label>
@@ -32,7 +31,7 @@
             </div>
             
             <div class="form-group text-center mt-4">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="submit" class="btn btn-primary">Create</button>
                 <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
@@ -41,4 +40,4 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-} 
+}

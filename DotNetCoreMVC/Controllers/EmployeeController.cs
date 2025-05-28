@@ -47,14 +47,14 @@ namespace DotNetCoreMVC.Controllers
             return View(employees);
         }
 
-        public IActionResult EmployeeCreate()
+        public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EmployeeCreate(AddEmployeeViewModel addEmployeeViewModel)
+        public async Task<IActionResult> Create(AddEmployeeViewModel addEmployeeViewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -69,93 +69,6 @@ namespace DotNetCoreMVC.Controllers
             };
 
             await _dataContext.Employees.AddAsync(employee);
-            await _dataContext.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> EmployeeEdit(int id)
-        {
-            var employee = await _dataContext.Employees.FirstOrDefaultAsync(x => x.EmployeeID == id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new AddEmployeeViewModel
-            {
-                EmployeeID = employee.EmployeeID,
-                EmployeeName = employee.EmployeeName,
-                Designation = employee.Designation,
-                Department = employee.Department
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EmployeeEdit(int id, AddEmployeeViewModel model)
-        {
-            if (id != model.EmployeeID)
-            {
-                return NotFound();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var employee = await _dataContext.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            employee.EmployeeName = model.EmployeeName;
-            employee.Designation = model.Designation;
-            employee.Department = model.Department;
-
-            try
-            {
-                _dataContext.Update(employee);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EmployeeExists(employee.EmployeeID))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> EmployeeDeleteConfirm(int id)
-        {
-            var employee = await _dataContext.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            return View(employee);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var employee = await _dataContext.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            _dataContext.Employees.Remove(employee);
             await _dataContext.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
@@ -201,6 +114,33 @@ namespace DotNetCoreMVC.Controllers
                 }
             }
             return View(employee);
+        }
+
+        public async Task<IActionResult> DeleteConfirm(int id)
+        {
+            var employee = await _dataContext.Employees.FindAsync(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            return View(employee);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var employee = await _dataContext.Employees.FindAsync(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            _dataContext.Employees.Remove(employee);
+            await _dataContext.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
         }
 
         private bool EmployeeExists(int id)
