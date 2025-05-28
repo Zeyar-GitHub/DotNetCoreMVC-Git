@@ -82,21 +82,21 @@ namespace DotNetCoreMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AddEmployeeViewModel addEmployeeViewModel)
+        public async Task<IActionResult> Create(Employee employee)
         {
             if (!ModelState.IsValid)
             {
-                return View(addEmployeeViewModel);
+                return View(employee);
             }
 
-            var employee = new Employee
+            var newEmployee = new Employee
             {
-                EmployeeName = addEmployeeViewModel.EmployeeName,
-                Designation = addEmployeeViewModel.Designation,
-                Department = addEmployeeViewModel.Department
+                EmployeeName = employee.EmployeeName,
+                Designation = employee.Designation,
+                Department = employee.Department
             };
 
-            await _dataContext.Employees.AddAsync(employee);
+            await _dataContext.Employees.AddAsync(newEmployee);
             await _dataContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
