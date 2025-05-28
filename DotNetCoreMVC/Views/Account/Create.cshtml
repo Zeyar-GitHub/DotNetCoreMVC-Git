@@ -3,38 +3,39 @@
     ViewData["Title"] = "Create Account";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h2 class="text-center mb-4">Create New Account</h2>
-                
-                @if (!ViewData.ModelState.IsValid)
-                {
-                    <div asp-validation-summary="All" class="alert alert-danger"></div>
-                }
-
-                <form asp-action="Create" method="post">
-                    @Html.AntiForgeryToken()
-                    
-                    <div class="form-group mb-3">
-                        <label for="UserName" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="UserName" name="UserName" 
-                               required minlength="3" maxlength="50">
-                    </div>
-                    
-                    <div class="form-group mb-4">
-                        <label for="Password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="Password" name="Password" 
-                               required minlength="6" maxlength="100">
-                    </div>
-                    
-                    <div class="form-group text-center mt-4">
-                        <button type="submit" class="btn btn-success">Create Account</button>
-                        <a asp-action="LogIn" class="btn btn-secondary ms-2">Back to Login</a>
-                    </div>
-                </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Create Account</h2>
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="UserName" class="fw-bold">Username</label>
+                            <input asp-for="UserName" class="form-control" autofocus />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label asp-for="Password" class="fw-bold">Password</label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <a href="@Url.Action("LogIn", "Account")" class="btn btn-secondary">Back to Login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

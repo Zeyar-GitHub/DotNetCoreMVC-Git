@@ -2,32 +2,33 @@
     ViewData["Title"] = "Delete Account";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <h2 class="text-center mb-4">Delete Account</h2>
-        
-        @if (ViewBag.Error != null)
-        {
-            <div class="alert alert-danger">@ViewBag.Error</div>
-        }
-
-        <form asp-action="Delete" method="post">
-            @Html.AntiForgeryToken()
-            
-            <div class="form-group mb-3">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Delete Account</h2>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+                    <form method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group mb-3">
+                            <label for="username" class="fw-bold">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required autofocus>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="password" class="fw-bold">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">Delete Account</button>
+                            <a href="@Url.Action("LogIn", "Account")" class="btn btn-secondary">Back to Login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
-            <div class="form-group mb-3">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            
-            <div class="form-group text-center mt-4">
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">Delete Account</button>
-                <a asp-action="LogIn" class="btn btn-secondary ms-2">Back to Login</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div> 
