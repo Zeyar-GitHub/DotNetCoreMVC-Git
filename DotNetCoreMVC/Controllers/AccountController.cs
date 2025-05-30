@@ -80,9 +80,9 @@ namespace DotNetCoreMVC.Controllers
                 _logger.LogInformation($"Login successful for user: {user.UserName} with role: {role.RoleName}");
 
                 // Redirect based on role
-                if (role.RoleName == "Admin")
+                if (role.RoleName == "Admin" || role.RoleName == "User")
                 {
-                    return RedirectToAction("Index", "Admin");
+                    return RedirectToAction("Index", "Employee");
                 }
                 return RedirectToAction("Index", "Home");
             }
