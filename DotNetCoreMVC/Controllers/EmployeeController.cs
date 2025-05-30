@@ -75,6 +75,7 @@ namespace DotNetCoreMVC.Controllers
             return View(employees);
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -82,29 +83,27 @@ namespace DotNetCoreMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Employee employee)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(employee);
+                await _dataContext.Employees.AddAsync(employee);
+                await _dataContext.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-
-            var newEmployee = new Employee
-            {
-                EmployeeName = employee.EmployeeName,
-                Designation = employee.Designation,
-                Department = employee.Department
-            };
-
-            await _dataContext.Employees.AddAsync(newEmployee);
-            await _dataContext.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            return View(employee);
         }
 
-        public IActionResult Edit(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int? id)
         {
-            var employee = _dataContext.Employees.Find(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var employee = await _dataContext.Employees.FindAsync(id);
             if (employee == null)
             {
                 return NotFound();
@@ -114,7 +113,8 @@ namespace DotNetCoreMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Employee employee)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int id, Employee employee)
         {
             if (id != employee.EmployeeID)
             {
@@ -126,10 +126,9 @@ namespace DotNetCoreMVC.Controllers
                 try
                 {
                     _dataContext.Update(employee);
-                    _dataContext.SaveChanges();
-                    return RedirectToAction(nameof(Index));
+                    await _dataContext.SaveChangesAsync();
                 }
-                catch (Exception)
+                catch (DbUpdateConcurrencyException)
                 {
                     if (!EmployeeExists(employee.EmployeeID))
                     {
@@ -140,13 +139,21 @@ namespace DotNetCoreMVC.Controllers
                         throw;
                     }
                 }
+                return RedirectToAction(nameof(Index));
             }
             return View(employee);
         }
 
-        public async Task<IActionResult> DeleteConfirm(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
         {
-            var employee = await _dataContext.Employees.FindAsync(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var employee = await _dataContext.Employees
+                .FirstOrDefaultAsync(m => m.EmployeeID == id);
             if (employee == null)
             {
                 return NotFound();
@@ -157,17 +164,16 @@ namespace DotNetCoreMVC.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var employee = await _dataContext.Employees.FindAsync(id);
-            if (employee == null)
+            if (employee != null)
             {
-                return NotFound();
+                _dataContext.Employees.Remove(employee);
             }
 
-            _dataContext.Employees.Remove(employee);
             await _dataContext.SaveChangesAsync();
-
             return RedirectToAction(nameof(Index));
         }
 

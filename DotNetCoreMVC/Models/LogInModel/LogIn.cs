@@ -15,5 +15,8 @@ namespace DotNetCoreMVC.Models
         [StringLength(100)]
         public string Password { get; set; }
 
+        // Role Management
+        public int RoleId { get; set; }
+        public Role Role { get; set; }
     }
 }
